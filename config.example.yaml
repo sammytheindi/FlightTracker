@@ -1,0 +1,32 @@
+api:
+  provider: google_flights       # Uses Google Flights internally — no API key needed
+
+search:
+  origins:
+    - DFW                        # Dallas/Fort Worth (primary hub)
+    - DAL                        # Dallas Love Field (optional, fewer intl routes)
+  destinations:
+    - AMD                        # Ahmedabad
+    # - BOM                      # Mumbai (alternative — may need domestic connection)
+    # - DEL                      # Delhi (alternative)
+  depart_dates:
+    start: "2026-12-10"
+    end: "2026-12-20"
+  return_dates:
+    start: "2027-01-01"
+    end: "2027-01-10"
+  passengers: 2
+  cabin_class: ECONOMY           # ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST
+  rate_limit_delay: 0.5          # Seconds between requests (be polite to Google)
+  max_results_per_search: 5      # Offers to store per date combination
+
+alerts:
+  enabled: false
+  threshold_usd: 1200            # Alert when price per person drops below this
+  email:
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    sender: "you@gmail.com"
+    password: "your-app-password" # Gmail: use an App Password, not your login password
+    recipients:
+      - "you@gmail.com"

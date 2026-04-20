@@ -1,0 +1,12 @@
+config.yaml
+data/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/

@@ -1,0 +1,9 @@
+fast-flights==2.2
+playwright>=1.44.0
+click>=8.1.0
+rich>=13.0.0
+plotext>=5.2.0
+apscheduler>=3.10.0
+pyyaml>=6.0.0
+pytest>=8.0.0
+pytest-mock>=3.12.0

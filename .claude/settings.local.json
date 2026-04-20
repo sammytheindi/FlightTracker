@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(pip show:*)",
+      "Bash(venv/bin/pip install:*)",
+      "Bash(python3:*)",
+      "Bash(venv/bin/python:*)",
+      "Bash(sqlite3:*)"
+    ]
+  }
+}
