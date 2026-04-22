@@ -28,7 +28,7 @@ watch:
 
 deploy:
 	ssh $(SERVER) "apt-get update -qq && apt-get install -y -qq docker.io docker-compose-v2 git"
-	ssh $(SERVER) "git clone https://github.com/sammytheindi/FlightTracker /app 2>/dev/null || git -C /app pull"
+	ssh $(SERVER) "[ -d /app ] && git -C /app pull || git clone https://github.com/sammytheindi/FlightTracker /app"
 	scp -r jobs/prod $(SERVER):/app/jobs/prod
 	ssh $(SERVER) "cd /app && docker compose up -d --build"
 
