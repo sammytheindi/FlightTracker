@@ -1,0 +1,7 @@
+services:
+  flighttracker:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data    # Persistent SQLite database
+      - ./jobs/prod:/app/jobs    # Production job YAMLs (contains credentials — never bake into image)

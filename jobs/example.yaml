@@ -1,0 +1,41 @@
+# Example job file — copy this to create additional search jobs.
+# Each .yaml file in the jobs/ directory is an independent job with its own
+# routes, recipients, alert threshold, and report schedule.
+#
+# Run all jobs:   python main.py watch --jobs-dir jobs/
+# Test a report:  python main.py daily-report --config jobs/example.yaml
+
+api:
+  provider: google_flights
+
+search:
+  origins:
+    - DFW
+  destinations:
+    - AMD
+  depart_dates:
+    start: "2026-12-10"
+    end: "2026-12-20"
+  return_dates:
+    start: "2027-01-01"
+    end: "2027-01-10"
+  passengers: 2
+  cabin_class: ECONOMY
+  rate_limit_delay: 0.5
+  max_results_per_search: 5
+
+alerts:
+  enabled: false
+  threshold_usd: 1200
+  email:
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    sender: "you@gmail.com"
+    password: "your-app-password"
+    recipients:
+      - "you@gmail.com"
+      # - "friend@gmail.com"
+
+report:
+  days: 14
+  send_time: "07:00"

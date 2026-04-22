@@ -64,10 +64,17 @@ class AlertsConfig:
 
 
 @dataclass
+class ReportConfig:
+    days: int = 14
+    send_time: str = "07:00"
+
+
+@dataclass
 class AppConfig:
     api: ApiConfig
     search: SearchConfig
     alerts: AlertsConfig
+    report: ReportConfig = field(default_factory=ReportConfig)
 
 
 # ---------------------------------------------------------------------------
@@ -104,8 +111,9 @@ def _parse(raw: dict) -> AppConfig:
     api = _parse_api(raw["api"])
     search = _parse_search(raw["search"])
     alerts = _parse_alerts(raw["alerts"])
+    report = _parse_report(raw.get("report") or {})
 
-    return AppConfig(api=api, search=search, alerts=alerts)
+    return AppConfig(api=api, search=search, alerts=alerts, report=report)
 
 
 def _parse_api(raw: dict) -> ApiConfig:
@@ -175,7 +183,7 @@ def _parse_alerts(raw: dict) -> AlertsConfig:
     email_raw = raw.get("email")
 
     email: Optional[EmailConfig] = None
-    if enabled and email_raw:
+    if email_raw:
         for key in ("smtp_host", "smtp_port", "sender", "password", "recipients"):
             _require(email_raw, key, section="alerts.email")
         email = EmailConfig(
@@ -187,6 +195,24 @@ def _parse_alerts(raw: dict) -> AlertsConfig:
         )
 
     return AlertsConfig(enabled=enabled, threshold_usd=threshold_usd, email=email)
+
+
+def _parse_report(raw: dict) -> ReportConfig:
+    days = int(raw.get("days", 14))
+    if days < 1:
+        raise ValueError("report.days must be at least 1")
+
+    send_time = str(raw.get("send_time", "07:00"))
+    try:
+        hour, minute = send_time.split(":")
+        if not (0 <= int(hour) <= 23 and 0 <= int(minute) <= 59):
+            raise ValueError()
+    except (ValueError, AttributeError):
+        raise ValueError(
+            f"report.send_time must be in HH:MM format (24h), got '{send_time}'"
+        )
+
+    return ReportConfig(days=days, send_time=send_time)
 
 
 def _require(d: dict, key: str, section: str = "root") -> None:

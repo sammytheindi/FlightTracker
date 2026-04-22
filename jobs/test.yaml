@@ -1,0 +1,33 @@
+api:
+  provider: google_flights
+
+search:
+  origins:
+    - DFW
+  destinations:
+    - AMD
+  depart_dates:
+    start: "2026-12-15"
+    end: "2026-12-15"       # single day — 1 API call total
+  return_dates:
+    start: "2027-01-05"
+    end: "2027-01-05"       # single day
+  passengers: 2
+  cabin_class: ECONOMY
+  rate_limit_delay: 0.5
+  max_results_per_search: 5
+
+alerts:
+  enabled: false
+  threshold_usd: 1200
+  email:
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    sender: "shahsquatch@gmail.com"
+    password: "lduf xcdj actm kbhw"
+    recipients:
+      - "samyak.shahfamily@gmail.com"
+
+report:
+  days: 14
+  send_time: "07:00"

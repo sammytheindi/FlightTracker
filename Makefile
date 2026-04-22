@@ -1,3 +1,7 @@
+SERVER ?= flight-tracker-server
+
+# ── Local dev ────────────────────────────────────────────────────────────────
+
 install:
 	pip install -r requirements.txt
 	playwright install chromium
@@ -20,4 +24,22 @@ history:
 watch:
 	python main.py watch
 
-.PHONY: install test check-selectors search matrix history watch
+# ── Server deployment ────────────────────────────────────────────────────────
+
+deploy:
+	ssh $(SERVER) "apt-get update -qq && apt-get install -y -qq docker.io docker-compose-v2 git"
+	ssh $(SERVER) "git clone https://github.com/samyakshah/FlightTracker /app 2>/dev/null || git -C /app pull"
+	scp -r jobs/prod $(SERVER):/app/jobs/prod
+	ssh $(SERVER) "cd /app && docker compose up -d --build"
+
+update:
+	ssh $(SERVER) "cd /app && git pull && docker compose up -d --build"
+
+push-jobs:
+	scp -r jobs/prod $(SERVER):/app/jobs/prod
+	ssh $(SERVER) "cd /app && docker compose restart"
+
+logs:
+	ssh $(SERVER) "cd /app && docker compose logs -f"
+
+.PHONY: install test check-selectors search matrix history watch deploy update push-jobs logs

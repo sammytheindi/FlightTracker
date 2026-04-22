@@ -1,0 +1,17 @@
+venv/
+.venv/
+data/
+.git/
+.gitignore
+.pytest_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+config.yaml
+jobs/
+tests/
+scripts/
+*.html
+.DS_Store
+.claude/

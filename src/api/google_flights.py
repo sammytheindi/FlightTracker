@@ -167,7 +167,10 @@ def _parse_aria_label(
         price_match = _RE_PRICE.search(label)
         if not price_match:
             return None
-        price_per_person = float(price_match.group(1).replace(",", ""))
+        # The aria-label reports the grand total for all passengers ("round trip total"),
+        # so divide by passengers to get the per-person price.
+        price_usd = float(price_match.group(1).replace(",", ""))
+        price_per_person = round(price_usd / passengers, 2)
 
         stops_match = _RE_STOPS.search(label)
         if stops_match:
@@ -186,8 +189,8 @@ def _parse_aria_label(
             destination=destination,
             depart_date=depart_date,
             return_date=return_date,
-            price_usd=round(price_per_person * passengers, 2),
-            price_per_person=round(price_per_person, 2),
+            price_usd=round(price_usd, 2),
+            price_per_person=price_per_person,
             airline=airline,
             stops=stops,
             duration_hrs=round(duration_hrs, 2),

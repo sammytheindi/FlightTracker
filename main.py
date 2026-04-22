@@ -237,30 +237,96 @@ def history(
 # ---------------------------------------------------------------------------
 
 
+def _load_configs_from_dir(jobs_dir: str) -> list:
+    """Load all *.yaml configs from a directory. Exits if none found."""
+    from pathlib import Path
+
+    yaml_files = sorted(Path(jobs_dir).glob("*.yaml"))
+    if not yaml_files:
+        console.print(f"[red]No .yaml files found in:[/] {jobs_dir}")
+        sys.exit(1)
+
+    configs = []
+    for path in yaml_files:
+        console.print(f"[dim]Loading job:[/] {path.name}")
+        configs.append(_load_config(str(path)))
+    return configs
+
+
 @cli.command()
 @click.option(
     "--interval",
-    default="6h",
+    default="12h",
     show_default=True,
-    help="Search interval: e.g. 30m, 2h, 1d",
+    help="Search interval: '12h' (default) runs twice daily with jobs spread evenly. Any other value (e.g. '1m', '6h') uses a fixed interval — useful for testing.",
+)
+@click.option(
+    "--jobs-dir",
+    "jobs_dir",
+    default=None,
+    help="Directory of job YAML files. If set, --config is ignored.",
 )
 @click.pass_context
-def watch(ctx: click.Context, interval: str) -> None:
-    """Run searches on a schedule until stopped (Ctrl+C)."""
-    from src.scheduler import start_watch, parse_interval
+def watch(ctx: click.Context, interval: str, jobs_dir: str | None) -> None:
+    """Run searches (and daily reports) on a schedule until stopped (Ctrl+C)."""
+    from src.scheduler import start_watch_multi, parse_interval
 
     try:
-        parse_interval(interval)  # validate before loading everything
+        parse_interval(interval)
     except ValueError as e:
         console.print(f"[red]Error:[/] {e}")
         sys.exit(1)
 
-    config = _load_config(ctx.obj["config_path"])
-    adapter = _make_adapter(config)
-    db = _make_db(ctx.obj["db_path"])
+    if jobs_dir:
+        configs = _load_configs_from_dir(jobs_dir)
+    else:
+        configs = [_load_config(ctx.obj["config_path"])]
 
-    start_watch(config, adapter, db, interval=interval)
+    db = _make_db(ctx.obj["db_path"])
+    start_watch_multi(configs, db, interval=interval)
     db.close()
+
+
+# ---------------------------------------------------------------------------
+# daily-report
+# ---------------------------------------------------------------------------
+
+
+@cli.command("daily-report")
+@click.option(
+    "--jobs-dir",
+    "jobs_dir",
+    default=None,
+    help="Directory of job YAML files. If set, --config is ignored.",
+)
+@click.pass_context
+def daily_report(ctx: click.Context, jobs_dir: str | None) -> None:
+    """Send a daily price report email immediately (useful for testing or one-off runs)."""
+    from src.report import send_daily_report
+
+    if jobs_dir:
+        configs = _load_configs_from_dir(jobs_dir)
+    else:
+        configs = [_load_config(ctx.obj["config_path"])]
+
+    db_path = ctx.obj["db_path"]
+
+    for config in configs:
+        route_label = "/".join(
+            f"{o}→{d}"
+            for o in config.search.origins
+            for d in config.search.destinations
+        )
+        console.print(f"[bold]Sending report for:[/] {route_label}")
+        try:
+            send_daily_report(config, db_path)
+            console.print(f"[green]Report sent.[/]")
+        except ValueError as e:
+            console.print(f"[red]Config error:[/] {e}")
+            sys.exit(1)
+        except Exception as e:
+            console.print(f"[red]Failed to send report:[/] {e}")
+            sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

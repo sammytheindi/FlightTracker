@@ -30,3 +30,8 @@ alerts:
     password: "your-app-password" # Gmail: use an App Password, not your login password
     recipients:
       - "you@gmail.com"
+      # - "friend@gmail.com"     # Add as many recipients as you want
+
+report:
+  days: 14           # How many days of price history to show in the graph
+  send_time: "07:00" # Daily report email time (HH:MM, 24-hour, server local time)
